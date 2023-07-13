@@ -1,0 +1,46 @@
+import requests
+from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
+
+def analyze_headline(headline):
+    # ... (Rest of the analyze_headline function remains the same)
+
+# URL of the Reuters European market page
+url = "https://www.reuters.com/finance/markets/europe"
+
+# Send a GET request to the page
+response = requests.get(url)
+
+# Create a BeautifulSoup object to parse the HTML content
+soup = BeautifulSoup(response.content, 'html.parser')
+
+# Find the headlines on the page
+headlines = soup.find_all('h3', class_='story-title')
+
+# Dictionary to collect the headlines per trading period
+headlines_by_period = defaultdict(list)
+
+# Analyze each headline and assign it to the corresponding trading period
+for headline in headlines:
+    headline_text = headline.text.strip()
+    result = analyze_headline(headline_text)
+    timestamp = datetime.now()
+    
+    # Determine the trading period based on the current time
+    if timestamp.hour < 6:
+        trade_period = timestamp.strftime("%Y-%m-%d")
+    elif timestamp.hour < 16:
+        trade_period = (timestamp + timedelta(days=1)).strftime("%Y-%m-%d")
+    else:
+        trade_period = (timestamp + timedelta(days=1)).strftime("%Y-%m-%d") + " (Next Day Opening)"
+    
+    # Add the headline to the corresponding trading period
+    headlines_by_period[trade_period].append((headline_text, result))
+
+# Print the headlines for each trading period
+for trade_period, headlines in headlines_by_period.items():
+    print(f"Trading Period: {trade_period}")
+    for headline, result in headlines:
+        print(f"Headline: {headline}")
+        print(f"Impact on Stock Price: {result}")
+    print()
